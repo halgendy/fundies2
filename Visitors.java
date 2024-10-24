@@ -347,4 +347,36 @@ class ExamplesVisitors {
   boolean testVisitConst(Tester t) {
     return true;
   }
+  
+  boolean testVisitUn(Tester t) {
+    return true;
+  }
+  
+  boolean testVisitBi(Tester t) {
+    return true;
+  }
+  
+  boolean testNeg(Tester t) {
+    return true;
+  }
+  
+  boolean testSqr(Tester t) {
+    return true;
+  }
+  
+  boolean testPlus(Tester t) {
+    return true;
+  }
+  
+  boolean testMinus(Tester t) {
+    return true;
+  }
+  
+  boolean testMul(Tester t) {
+    return true;
+  }
+  
+  boolean testDiv(Tester t) {
+    return true;
+  }
 }
