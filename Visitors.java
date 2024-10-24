@@ -380,6 +380,7 @@ class ExamplesVisitors {
     return true;
   }
   
+  //
   boolean testMul(Tester t) {
     return true;
   }
