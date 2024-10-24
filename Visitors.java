@@ -266,6 +266,83 @@ class Div implements BiFunction<Double, Double, Double> {
 }
 
 class ExamplesVisitors {
-  BiFunction<Double, Double, Double> divide = new Div();
   
-}
+  // create test examples for all types of visitors
+  EvalVisitor ev = new EvalVisitor();
+  PrintVisitor pv = new PrintVisitor();
+  MirrorVisitor mv = new MirrorVisitor();
+  AllEvenVisitor aev = new AllEvenVisitor();
+  
+  // const examples
+  Const zero = new Const(0.0);
+  Const posNum = new Const(100.0);
+  Const even = new Const(2.0);
+  Const negNum = new Const(-5.0);
+  Const odd = new Const(1.0);
+  
+  // Function test examples
+  Function<Double, Double> neg = new Neg();
+  Function<Double, Double> sqr = new Sqr();
+  BiFunction<Double, Double, Double> plus = new Plus();
+  BiFunction<Double, Double, Double> minus = new Minus();
+  BiFunction<Double, Double, Double> mul = new Mul();
+  BiFunction<Double, Double, Double> div = new Div();
+  
+  // unary examples
+  
+  // unary examples with const children
+  UnaryFormula uf0 = new UnaryFormula(this.neg, "neg", zero);
+  UnaryFormula ufPos = new UnaryFormula(this.neg, "neg", posNum);
+  UnaryFormula ufNeg = new UnaryFormula(this.neg, "neg", negNum);
+  
+  // unary examples with unary children
+  UnaryFormula unun = new UnaryFormula(this.neg, "neg", zero);
+  
+  // unary examples with binary children
+  UnaryFormula unbi = new UnaryFormula(this.neg, "neg", zero);
+  
+  // binary examples
+  
+  // binary examples with const children
+  UnaryFormula bi0 = new UnaryFormula(this.neg, "neg", zero);
+  UnaryFormula biPos = new UnaryFormula(this.neg, "neg", posNum);
+  UnaryFormula biNeg = new UnaryFormula(this.neg, "neg", negNum);
+  
+  // binary examples with unary children
+  UnaryFormula biun = new UnaryFormula(this.neg, "neg", zero);
+  
+  // binary examples with binary children
+  UnaryFormula bibi = new UnaryFormula(this.neg, "neg", zero);
+  
+  // tests the apply method using the 4 different visitor types
+  boolean testApply(Tester t) {
+    
+    // tests the eval visitor type, negative, positive, and 
+    return t.checkExpect(this.ev.apply(this.zero), 0.0)
+        && t.checkExpect(this.ev.apply(this.posNum), 100.0)
+        && t.checkExpect(this.ev.apply(this.even), 2.0)
+        && t.checkExpect(this.ev.apply(this.negNum), -5.0)
+        && t.checkExpect(this.ev.apply(this.odd), 1.0)
+        
+        && t.checkExpect(this.pv.apply(this.zero), "0.0")
+        && t.checkExpect(this.pv.apply(this.posNum), "100.0")
+        && t.checkExpect(this.pv.apply(this.even), "2.0")
+        && t.checkExpect(this.pv.apply(this.negNum), "-5.0")
+        && t.checkExpect(this.pv.apply(this.odd), "1.0")
+        
+        && t.checkExpect(this.mv.apply(this.zero), this.mv)
+        && t.checkExpect(this.mv.apply(this.posNum), this.mv)
+        && t.checkExpect(this.mv.apply(this.even), this.mv)
+        && t.checkExpect(this.mv.apply(this.negNum), this.mv)
+        && t.checkExpect(this.mv.apply(this.odd), this.mv)
+        
+        && t.checkExpect(this.aev.apply(this.zero), true)
+        && t.checkExpect(this.aev.apply(this.posNum), true)
+        && t.checkExpect(this.aev.apply(this.even), true)
+        && t.checkExpect(this.aev.apply(this.negNum), false)
+        && t.checkExpect(this.aev.apply(this.odd), false);
+  }
+  
+  boolean testVisitConst(Tester t) {
+    return true;
+  }
