@@ -4,6 +4,9 @@ import java.util.function.Function;
 //REPRESENTS
 interface IArithVisitor<R> {
   
+  // REPRESENTS
+  R apply(IArith arith);
+  
   //REPRESENTS
   R visitConst(Const constant);
   
@@ -19,9 +22,17 @@ interface IArithVisitor<R> {
 //REPRESENTS
 class EvalVistor implements IArithVisitor<Double> {
   
+  //CONSTRUCTOR
+  EvalVistor() {}
+  
   // REPRESENTS
-  public Double visitConst(Const c) {
-    return 0.0;
+  public Double apply(IArith arith) {
+    return arith.accept(this);
+  }
+  
+  // REPRESENTS
+  public Double visitConst(Const constant) {
+    return constant.num;
   }
   
   // REPRESENTS  
@@ -38,9 +49,17 @@ class EvalVistor implements IArithVisitor<Double> {
 //REPRESENTS
 class PrintVistor implements IArithVisitor<String> {
   
+  //CONSTRUCTOR
+  PrintVistor() {}
+  
   // REPRESENTS
-  public String visitConst(Const c) {
-    return "";
+  public String apply(IArith arith) {
+    return arith.accept(this);
+  }
+  
+  // REPRESENTS
+  public String visitConst(Const constant) {
+    return constant.num.toString();
   }
   
   // REPRESENTS  
@@ -57,9 +76,17 @@ class PrintVistor implements IArithVisitor<String> {
 //REPRESENTS
 class MirrorVisitor implements IArithVisitor<IArith> {
   
+  //CONSTRUCTOR
+  MirrorVisitor() {}
+  
   // REPRESENTS
-  public IArith visitConst(Const c) {
-    return null;
+  public IArith apply(IArith arith) {
+    return arith.accept(this);
+  }
+  
+  // REPRESENTS
+  public IArith visitConst(Const constant) {
+    return constant;
   }
   
   // REPRESENTS  
@@ -76,8 +103,16 @@ class MirrorVisitor implements IArithVisitor<IArith> {
 //REPRESENTS
 class AllEvenVisitor implements IArithVisitor<Boolean> {
   
+  //CONSTRUCTOR
+  AllEvenVisitor() {}
+  
   // REPRESENTS
-  public Boolean visitConst(Const c) {
+  public Boolean apply(IArith arith) {
+    return arith.accept(this);
+  }
+  
+  // REPRESENTS
+  public Boolean visitConst(Const constant) {
     return true;
   }
   
@@ -104,10 +139,10 @@ interface IArith {
 
 
 //REPRESENTS
-class Const {
-  double num;
+class Const implements IArith {
+  Double num;
   
-  Const(double num) {
+  Const(Double num) {
     this.num = num;
   }
   
@@ -118,7 +153,7 @@ class Const {
 }
 
 //REPRESENTS
-class UnaryFormula {
+class UnaryFormula implements IArith {
   Function<Double, Double> func;
   String name;
   IArith child;
@@ -137,7 +172,7 @@ class UnaryFormula {
 }
 
 //REPRESENTS
-class BinaryFormula {
+class BinaryFormula implements IArith {
   BiFunction<Double, Double, Double> func;
   String name;
   IArith left;
