@@ -1,5 +1,6 @@
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import tester.*;
 
 //REPRESENTS
 interface IArithVisitor<R> {
@@ -122,7 +123,7 @@ class AllEvenVisitor implements IArithVisitor<Boolean> {
   
   // REPRESENTS
   public Boolean visitConst(Const constant) {
-    return true;
+    return ((constant.num % 2) == 0);
   }
   
   // REPRESENTS  
@@ -330,11 +331,11 @@ class ExamplesVisitors {
         && t.checkExpect(this.pv.apply(this.negNum), "-5.0")
         && t.checkExpect(this.pv.apply(this.odd), "1.0")
         
-        && t.checkExpect(this.mv.apply(this.zero), this.mv)
-        && t.checkExpect(this.mv.apply(this.posNum), this.mv)
-        && t.checkExpect(this.mv.apply(this.even), this.mv)
-        && t.checkExpect(this.mv.apply(this.negNum), this.mv)
-        && t.checkExpect(this.mv.apply(this.odd), this.mv)
+        && t.checkExpect(this.mv.apply(this.zero), this.zero)
+        && t.checkExpect(this.mv.apply(this.posNum), this.posNum)
+        && t.checkExpect(this.mv.apply(this.even), this.even)
+        && t.checkExpect(this.mv.apply(this.negNum), this.negNum)
+        && t.checkExpect(this.mv.apply(this.odd), this.odd)
         
         && t.checkExpect(this.aev.apply(this.zero), true)
         && t.checkExpect(this.aev.apply(this.posNum), true)
@@ -346,3 +347,4 @@ class ExamplesVisitors {
   boolean testVisitConst(Tester t) {
     return true;
   }
+}
