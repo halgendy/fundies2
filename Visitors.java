@@ -20,10 +20,10 @@ interface IArithVisitor<R> {
 }
 
 //REPRESENTS
-class EvalVistor implements IArithVisitor<Double> {
+class EvalVisitor implements IArithVisitor<Double> {
   
   //CONSTRUCTOR
-  EvalVistor() {}
+  EvalVisitor() {}
   
   // REPRESENTS
   public Double apply(IArith arith) {
@@ -37,20 +37,20 @@ class EvalVistor implements IArithVisitor<Double> {
   
   // REPRESENTS  
   public Double visitUn(UnaryFormula unFormula) {
-    return 0.0;
+    return unFormula.func.apply(unFormula.child.accept(this));
   }
   
   // REPRESENTS 
   public Double visitBi(BinaryFormula biFormula) {
-    return 0.0;
+    return biFormula.func.apply(biFormula.left.accept(this), biFormula.right.accept(this));
   }
 }
 
 //REPRESENTS
-class PrintVistor implements IArithVisitor<String> {
+class PrintVisitor implements IArithVisitor<String> {
   
   //CONSTRUCTOR
-  PrintVistor() {}
+  PrintVisitor() {}
   
   // REPRESENTS
   public String apply(IArith arith) {
@@ -64,12 +64,14 @@ class PrintVistor implements IArithVisitor<String> {
   
   // REPRESENTS  
   public String visitUn(UnaryFormula unFormula) {
-    return "";
+    return "(" + unFormula.name + " " + unFormula.child.accept(this) + ")";
   }
   
   // REPRESENTS 
   public String visitBi(BinaryFormula biFormula) {
-    return "";
+    return "(" + biFormula.name + " " 
+        + biFormula.left.accept(this)
+        + biFormula.left.accept(this) + ")";
   }
 }
 
@@ -91,12 +93,19 @@ class MirrorVisitor implements IArithVisitor<IArith> {
   
   // REPRESENTS  
   public IArith visitUn(UnaryFormula unFormula) {
-    return null;
+    // func, name child
+    unFormula.child = unFormula.child.accept(this);
+    
+    return unFormula;
   }
   
   // REPRESENTS 
   public IArith visitBi(BinaryFormula biFormula) {
-    return null;
+    
+    biFormula.left = biFormula.right.accept(this);
+    biFormula.right = biFormula.left.accept(this);
+    
+    return biFormula;
   }
 }
 
@@ -118,12 +127,12 @@ class AllEvenVisitor implements IArithVisitor<Boolean> {
   
   // REPRESENTS  
   public Boolean visitUn(UnaryFormula unFormula) {
-    return true;
+    return unFormula.child.accept(this);
   }
   
   // REPRESENTS 
   public Boolean visitBi(BinaryFormula biFormula) {
-    return true;
+    return biFormula.left.accept(this) && biFormula.right.accept(this);
   }
 }
 
@@ -200,7 +209,7 @@ class Neg implements Function<Double, Double> {
   @Override
   // REPRESENTS
   public Double apply(Double t) {
-    return 0.0;
+    return -t;
   }
 }
 
@@ -210,7 +219,7 @@ class Sqr implements Function<Double, Double> {
   @Override
   //REPRESENTS
   public Double apply(Double t) {
-  return 0.0;
+  return t * t;
   }
 }
 
@@ -222,7 +231,7 @@ class Plus implements BiFunction<Double, Double, Double> {
   @Override
   // REPRESENTS
   public Double apply(Double t, Double u) {
-    return 0.0;
+    return t + u;
   }
 }
  
@@ -232,17 +241,17 @@ class Minus implements BiFunction<Double, Double, Double> {
   @Override
   // REPRESENTS
   public Double apply(Double t, Double u) {
-    return 0.0;
+    return t - u;
   }
 }
 
 //REPRESENTS
-class Mull implements BiFunction<Double, Double, Double> {
+class Mul implements BiFunction<Double, Double, Double> {
 
   @Override
   // REPRESENTS
   public Double apply(Double t, Double u) {
-    return 0.0;
+    return t * u;
   }
 }
 
@@ -252,11 +261,11 @@ class Div implements BiFunction<Double, Double, Double> {
   @Override
   // REPRESENTS
   public Double apply(Double t, Double u) {
-    return 0.0;
+    return t / u;
   }
 }
 
-class ExamplesVistors {
-  
+class ExamplesVisitors {
+  BiFunction<Double, Double, Double> divide = new Div();
   
 }
