@@ -1,1 +1,111 @@
-//
+import java.util.ArrayList;
+import java.util.function.Predicate;
+import tester.Tester;
+
+class ArrayPractice {
+  
+  // filter
+  <T> ArrayList<T> filter(ArrayList<T> arr, Predicate<T> pred) {
+    ArrayList<T> ans = new ArrayList<T>();
+    for(T obj : arr) {
+      if(pred.test(obj)) {
+        ans.add(obj);
+      }
+    }
+    return ans;
+  }
+  
+  // filter not
+  <T> ArrayList<T> filterNot(ArrayList<T> arr, Predicate<T> pred) {
+    ArrayList<T> ans = new ArrayList<T>();
+    for(T obj : arr) {
+      if(!pred.test(obj)) {
+        ans.add(obj);
+      }
+    }
+    return ans;
+  }
+  
+  // combined filter
+  <T> ArrayList<T> customFilter(ArrayList<T> arr, Predicate<T> pred, boolean keepPassing) {
+    if (keepPassing) {
+      return filter(arr, pred);
+    } else {
+      return filterNot(arr, pred);
+    }
+  }
+  
+  // remove the failed pred
+  <T> void removeFailing(ArrayList<T> arr, Predicate<T> pred) {
+    for(int i = 0; i < arr.size(); i++) {
+      if (pred.test(arr.get(i))) {
+        continue;
+      } else {
+        arr.remove(i);
+        i--;
+      }
+    }
+  }
+  
+  <T> ArrayList<T> interweave(ArrayList<T> arr1, ArrayList<T> arr2) {
+    ArrayList<T> ans = new ArrayList<T>();
+    int max = Math.max(arr1.size(), arr2.size());
+    for(int i = 0; i < max; i++) {
+      if(arr1.size() < i) {
+        ans.addLast(arr1.get(i));
+      }
+      if(arr2.size() < i) {
+        ans.addLast(arr2.get(i));
+      }
+    }
+    return ans;
+  }
+  
+  <T> ArrayList<T> customInterweave(ArrayList<T> arr1, ArrayList<T> arr2, int getFrom1, int getFrom2) {
+    ArrayList<T> ans = new ArrayList<T>();
+    int arr1Size = arr1.size();
+    int arr2Size = arr2.size();
+    int max = Math.max(arr1.size(), arr2.size());
+    for(int i = 0; i < max; i++) {
+      
+      if(arr1Size - getFrom1 < 0) {
+        for(int j = 0; j < arr1Size; j++) {
+          ans.addLast(arr1.get(j));
+          arr1.remove(j);
+        }
+      } else {
+        for(int j = 0; j < arr1Size - getFrom1; j++) {
+          ans.addLast(arr2.get(j));
+          arr2.remove(j);
+          arr1Size -= getFrom1;
+        }
+      }
+      
+      // checks if getfrom returns the rest
+      if(arr2Size - getFrom2 < 0) {
+        
+        // adds the rest
+        for(int j = 0; j < arr2Size; j++) {
+          ans.addLast(arr2.get(j));
+          arr2.remove(j);
+        }
+        // checks if getfrom doesn't return the rest
+      } else {
+        
+        // adds the rest, makes arr2Size lower
+        for(int j = 0; j < arr2Size - getFrom2; j++) {
+          ans.addLast(arr2.get(j));
+          arr2.remove(j);
+          arr2Size -= getFrom2;
+        }
+      }
+      
+    }
+    return ans;
+  }
+  
+}
+
+class ExamplesArrayLists {
+  
+}
