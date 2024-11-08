@@ -39,6 +39,7 @@ class Huffman {
 
     // sort the full tree using insertion sort
     iSort(tree);
+    // System.out.println(tree);
 
     // build the nodes up into the full tree
     while (tree.size() > 1) {
@@ -50,9 +51,13 @@ class Huffman {
       // create and add a new parent node with the right children
       TotalNode parent = new TotalNode(zero, one);
       tree.add(parent);
+      
+      System.out.println(tree);
 
       // sort the tree again
       iSort(tree);
+      
+      System.out.println(tree);
     }
 
     // set the root to the tree's only node
@@ -202,17 +207,17 @@ class LeafNode implements INode {
 
   // REPRESENTS
   public Boolean greaterThan(INode that) {
-    return that.greaterThan(this);
+    return !that.greaterThan(this);
   }
 
   // REPRESENTS
   public Boolean greaterThan(LeafNode that) {
-    return this.freq < that.freq;
+    return this.freq >= that.freq;
   }
 
   // REPRESENTS
   public Boolean greaterThan(TotalNode that) {
-    return this.freq < that.freq;
+    return this.freq >= that.freq;
   }
 
   //
@@ -227,7 +232,7 @@ class LeafNode implements INode {
 
   //
   public Integer combineFreq(TotalNode thatTotal) {
-    return this.freq + thatTotal.left.combineFreq(thatTotal.right);
+    return this.freq + thatTotal.freq;
   }
 }
 
@@ -276,17 +281,17 @@ class TotalNode implements INode {
 
   //
   public Boolean greaterThan(INode that) {
-    return that.greaterThan(this);
+    return !that.greaterThan(this);
   }
 
   //
   public Boolean greaterThan(LeafNode that) {
-    return this.freq < that.freq;
+    return this.freq >= that.freq;
   }
 
   //
   public Boolean greaterThan(TotalNode that) {
-    return this.freq < that.freq;
+    return this.freq >= that.freq;
   }
 
   public Integer combineFreq(INode that) {
@@ -294,11 +299,11 @@ class TotalNode implements INode {
   }
 
   public Integer combineFreq(LeafNode thatLeaf) {
-    return this.freq;
+    return this.freq + thatLeaf.freq;
   }
 
   public Integer combineFreq(TotalNode thatTotal) {
-    return this.left.combineFreq(this.right) + thatTotal.left.combineFreq(thatTotal.right);
+    return this.freq + thatTotal.freq;
   }
 }
 
