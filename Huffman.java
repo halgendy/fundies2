@@ -115,7 +115,7 @@ class Huffman {
         // If findChar returns an empty string, we have leftover bits that do not decode
         // to a character
         decoded += "?";
-        break;
+        remainingBits = "";
       }
       else {
         // Append the decoded character and remove the corresponding bits
@@ -164,7 +164,7 @@ interface INode {
 
   //
   Boolean greaterThan(TotalNode that);
-  
+
   //
   Integer combineFreq(INode that);
 
@@ -207,14 +207,14 @@ class LeafNode implements INode {
 
   // REPRESENTS
   public Boolean greaterThan(LeafNode that) {
-    return this.freq <= that.freq;
+    return this.freq < that.freq;
   }
 
   // REPRESENTS
   public Boolean greaterThan(TotalNode that) {
-    return this.freq <= that.freq;
+    return this.freq < that.freq;
   }
-  
+
   //
   public Integer combineFreq(INode that) {
     return that.combineFreq(this);
@@ -281,14 +281,14 @@ class TotalNode implements INode {
 
   //
   public Boolean greaterThan(LeafNode that) {
-    return this.freq <= that.freq;
+    return this.freq < that.freq;
   }
 
   //
   public Boolean greaterThan(TotalNode that) {
-    return this.freq <= that.freq;
+    return this.freq < that.freq;
   }
-  
+
   public Integer combineFreq(INode that) {
     return that.combineFreq(this);
   }
@@ -296,7 +296,7 @@ class TotalNode implements INode {
   public Integer combineFreq(LeafNode thatLeaf) {
     return this.freq;
   }
-  
+
   public Integer combineFreq(TotalNode thatTotal) {
     return this.left.combineFreq(this.right) + thatTotal.left.combineFreq(thatTotal.right);
   }
@@ -468,9 +468,11 @@ class ExamplesHuffman {
     // initialize examples
     init();
 
-    //ArrayList<String> strArr1 = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f"));
-    //ArrayList<Integer> intArr1 = new ArrayList<>(Arrays.asList(12, 45, 5, 13, 9, 16));
-    
+    // ArrayList<String> strArr1 = new ArrayList<>(Arrays.asList("a", "b", "c", "d",
+    // "e", "f"));
+    // ArrayList<Integer> intArr1 = new ArrayList<>(Arrays.asList(12, 45, 5, 13, 9,
+    // 16));
+
     // test regular case
     t.checkExpect(this.h1.decode(
         new ArrayList<Boolean>(Arrays.asList(true, false, false, false, true, true, false, false))),
@@ -492,7 +494,7 @@ class ExamplesHuffman {
         "abcdefabcdef");
 
   }
-  
+
   // test findCode method
   void testFindCode(Tester t) {
 
@@ -544,7 +546,7 @@ class ExamplesHuffman {
     t.checkExpect(this.h2.root.findChar("1010"), "f");
 
   }
-  
+
   // test greaterThan method
   void testGreaterThan(Tester t) {
 
@@ -555,7 +557,7 @@ class ExamplesHuffman {
     init();
 
     // test all letters in h1
-    t.checkExpect(this.h1.root.greaterThan(this.h1.root), true);
+    t.checkExpect(this.h1.root.greaterThan(this.h1.root), false);
     t.checkExpect(this.h1.root.findChar("0"), "b");
     t.checkExpect(this.h1.root.findChar("1100"), "c");
     t.checkExpect(this.h1.root.findChar("101"), "d");
@@ -570,7 +572,7 @@ class ExamplesHuffman {
     t.checkExpect(this.h2.root.findChar("1010"), "f");
 
   }
-  
+
   // test combineFreq method
   void testCombineFreq(Tester t) {
 
