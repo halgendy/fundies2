@@ -151,15 +151,6 @@ class Huffman {
 interface INode {
 
   //
-  Integer combineFreq(INode that);
-
-  //
-  Integer combineFreq(LeafNode thatLeaf);
-
-  //
-  Integer combineFreq(TotalNode thatLeaf);
-
-  //
   String findCode(char ch, String ans);
 
   //
@@ -173,6 +164,15 @@ interface INode {
 
   //
   Boolean greaterThan(TotalNode that);
+  
+  //
+  Integer combineFreq(INode that);
+
+  //
+  Integer combineFreq(LeafNode thatLeaf);
+
+  //
+  Integer combineFreq(TotalNode thatLeaf);
 }
 
 // represents a single node or tree of nodes
@@ -184,21 +184,6 @@ class LeafNode implements INode {
   LeafNode(String letter, int freq) {
     this.letter = letter;
     this.freq = freq;
-  }
-
-  //
-  public Integer combineFreq(INode that) {
-    return that.combineFreq(this);
-  }
-
-  //
-  public Integer combineFreq(LeafNode thatLeaf) {
-    return this.freq + thatLeaf.freq;
-  }
-
-  //
-  public Integer combineFreq(TotalNode thatTotal) {
-    return this.freq + thatTotal.left.combineFreq(thatTotal.right);
   }
 
   // a depth first search for char c
@@ -222,12 +207,27 @@ class LeafNode implements INode {
 
   // REPRESENTS
   public Boolean greaterThan(LeafNode that) {
-    return this.freq < that.freq;
+    return this.freq <= that.freq;
   }
 
   // REPRESENTS
   public Boolean greaterThan(TotalNode that) {
-    return this.freq < that.freq;
+    return this.freq <= that.freq;
+  }
+  
+  //
+  public Integer combineFreq(INode that) {
+    return that.combineFreq(this);
+  }
+
+  //
+  public Integer combineFreq(LeafNode thatLeaf) {
+    return this.freq + thatLeaf.freq;
+  }
+
+  //
+  public Integer combineFreq(TotalNode thatTotal) {
+    return this.freq + thatTotal.left.combineFreq(thatTotal.right);
   }
 }
 
@@ -244,21 +244,6 @@ class TotalNode implements INode {
     this.freq = left.combineFreq(right);
   }
 
-  // REPRESENTS
-  public Integer combineFreq(INode that) {
-    return that.combineFreq(this);
-  }
-
-  // REPRESENTS
-  public Integer combineFreq(LeafNode thatLeaf) {
-    return this.freq;
-  }
-
-  // REPRESENTS
-  public Integer combineFreq(TotalNode thatTotal) {
-    return this.left.combineFreq(this.right) + thatTotal.left.combineFreq(thatTotal.right);
-  }
-
   // a depth first search for char c
   public String findCode(char ch, String ans) {
     // add 0 to accumulated answer if left and 1 if going right
@@ -271,9 +256,6 @@ class TotalNode implements INode {
     else {
       return left;
     }
-
-    // return this.left.findCode(ch, ans + '0') + this.right.findCode(ch, ans +
-    // '1');
   }
 
   //
@@ -299,12 +281,24 @@ class TotalNode implements INode {
 
   //
   public Boolean greaterThan(LeafNode that) {
-    return this.freq < that.freq;
+    return this.freq <= that.freq;
   }
 
   //
   public Boolean greaterThan(TotalNode that) {
-    return this.freq < that.freq;
+    return this.freq <= that.freq;
+  }
+  
+  public Integer combineFreq(INode that) {
+    return that.combineFreq(this);
+  }
+
+  public Integer combineFreq(LeafNode thatLeaf) {
+    return this.freq;
+  }
+  
+  public Integer combineFreq(TotalNode thatTotal) {
+    return this.left.combineFreq(this.right) + thatTotal.left.combineFreq(thatTotal.right);
   }
 }
 
@@ -465,6 +459,40 @@ class ExamplesHuffman {
                 false, false, true, false, true, true, true, false, true, true, true, true)));
   }
 
+  // test decode method
+  void testDecode(Tester t) {
+
+    // reset examples
+    reset();
+
+    // initialize examples
+    init();
+
+    //ArrayList<String> strArr1 = new ArrayList<>(Arrays.asList("a", "b", "c", "d", "e", "f"));
+    //ArrayList<Integer> intArr1 = new ArrayList<>(Arrays.asList(12, 45, 5, 13, 9, 16));
+    
+    // test regular case
+    t.checkExpect(this.h1.decode(
+        new ArrayList<Boolean>(Arrays.asList(true, false, false, false, true, true, false, false))),
+        "abc");
+
+    // test case with binary that leads out of the tree
+    t.checkExpect(this.h1.decode(new ArrayList<Boolean>(Arrays.asList(false, true, false))), "b?");
+
+    // test case with duplicate letters
+    t.checkExpect(this.h1.decode(new ArrayList<Boolean>(
+        Arrays.asList(true, false, false, true, false, false, true, false, false))), "aaa");
+
+    // test case with a lot of letters
+    t.checkExpect(
+        this.h1.decode(new ArrayList<Boolean>(
+            Arrays.asList(true, false, false, false, true, true, false, false, true, false, true,
+                true, true, false, true, true, true, true, true, false, false, false, true, true,
+                false, false, true, false, true, true, true, false, true, true, true, true))),
+        "abcdefabcdef");
+
+  }
+  
   // test findCode method
   void testFindCode(Tester t) {
 
@@ -490,35 +518,9 @@ class ExamplesHuffman {
     t.checkExpect(this.h2.root.findCode('f', ""), "1010");
 
   }
-  
-//test findCode method
- void testFindChar(Tester t) {
 
-   // reset examples
-   reset();
-
-   // initialize examples
-   init();
-
-   // test all letters in h1
-   t.checkExpect(this.h1.root.findChar("100"), "a");
-   t.checkExpect(this.h1.root.findChar("0"), "b");
-   t.checkExpect(this.h1.root.findChar("1100"), "c");
-   t.checkExpect(this.h1.root.findChar("101"), "d");
-   t.checkExpect(this.h1.root.findChar("1101"), "e");
-   t.checkExpect(this.h1.root.findChar("111"), "f");
-
-   // test all letters in h2
-   t.checkExpect(this.h2.root.findChar("11"), "a");
-   t.checkExpect(this.h2.root.findChar("0"), "b");
-   t.checkExpect(this.h2.root.findChar("1000"), "c");
-   t.checkExpect(this.h2.root.findChar("1001"), "e");
-   t.checkExpect(this.h2.root.findChar("1010"), "f");
-
- }
-
-  // test decode method
-  void testDecode(Tester t) {
+  // test findChar method
+  void testFindChar(Tester t) {
 
     // reset examples
     reset();
@@ -526,25 +528,72 @@ class ExamplesHuffman {
     // initialize examples
     init();
 
-    // test regular case
-    t.checkExpect(this.h1.decode(
-        new ArrayList<Boolean>(Arrays.asList(true, false, false, false, true, true, false, false))),
-        "abc");
+    // test all letters in h1
+    t.checkExpect(this.h1.root.findChar("100"), "a");
+    t.checkExpect(this.h1.root.findChar("0"), "b");
+    t.checkExpect(this.h1.root.findChar("1100"), "c");
+    t.checkExpect(this.h1.root.findChar("101"), "d");
+    t.checkExpect(this.h1.root.findChar("1101"), "e");
+    t.checkExpect(this.h1.root.findChar("111"), "f");
 
-    // test case with binary that leads out of the tree
-    t.checkExpect(this.h1.decode(new ArrayList<Boolean>(Arrays.asList(false, true, false))), "b?");
+    // test all letters in h2
+    t.checkExpect(this.h2.root.findChar("11"), "a");
+    t.checkExpect(this.h2.root.findChar("0"), "b");
+    t.checkExpect(this.h2.root.findChar("1000"), "c");
+    t.checkExpect(this.h2.root.findChar("1001"), "e");
+    t.checkExpect(this.h2.root.findChar("1010"), "f");
 
-    // test case with duplicate letters
-    t.checkExpect(this.h1.decode(new ArrayList<Boolean>(
-        Arrays.asList(true, false, false, true, false, false, true, false, false))), "aaa");
+  }
+  
+  // test greaterThan method
+  void testGreaterThan(Tester t) {
 
-    // test case with a lot of letters
-    t.checkExpect(
-        this.h1.decode(new ArrayList<Boolean>(
-            Arrays.asList(true, false, false, false, true, true, false, false, true, false, true,
-                true, true, false, true, true, true, true, true, false, false, false, true, true,
-                false, false, true, false, true, true, true, false, true, true, true, true))),
-        "abcdefabcdef");
+    // reset examples
+    reset();
+
+    // initialize examples
+    init();
+
+    // test all letters in h1
+    t.checkExpect(this.h1.root.greaterThan(this.h1.root), true);
+    t.checkExpect(this.h1.root.findChar("0"), "b");
+    t.checkExpect(this.h1.root.findChar("1100"), "c");
+    t.checkExpect(this.h1.root.findChar("101"), "d");
+    t.checkExpect(this.h1.root.findChar("1101"), "e");
+    t.checkExpect(this.h1.root.findChar("111"), "f");
+
+    // test all letters in h2
+    t.checkExpect(this.h2.root.findChar("11"), "a");
+    t.checkExpect(this.h2.root.findChar("0"), "b");
+    t.checkExpect(this.h2.root.findChar("1000"), "c");
+    t.checkExpect(this.h2.root.findChar("1001"), "e");
+    t.checkExpect(this.h2.root.findChar("1010"), "f");
+
+  }
+  
+  // test combineFreq method
+  void testCombineFreq(Tester t) {
+
+    // reset examples
+    reset();
+
+    // initialize examples
+    init();
+
+    // test all letters in h1
+    t.checkExpect(this.h1.root.findChar("100"), "a");
+    t.checkExpect(this.h1.root.findChar("0"), "b");
+    t.checkExpect(this.h1.root.findChar("1100"), "c");
+    t.checkExpect(this.h1.root.findChar("101"), "d");
+    t.checkExpect(this.h1.root.findChar("1101"), "e");
+    t.checkExpect(this.h1.root.findChar("111"), "f");
+
+    // test all letters in h2
+    t.checkExpect(this.h2.root.findChar("11"), "a");
+    t.checkExpect(this.h2.root.findChar("0"), "b");
+    t.checkExpect(this.h2.root.findChar("1000"), "c");
+    t.checkExpect(this.h2.root.findChar("1001"), "e");
+    t.checkExpect(this.h2.root.findChar("1010"), "f");
 
   }
 }
