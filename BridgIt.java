@@ -1,85 +1,291 @@
 import java.util.*;
-import tester.*;
 import javalib.impworld.*;
-import java.awt.Color;
+import tester.*;
 import javalib.worldimages.*;
+import java.awt.Color;
 
-
-class Tile {
+class Cell {
+  
+  // type (p1, p2, or unowned)
   Color color;
   
-  // Tile can be null if on border
-  Tile north;
-  Tile east;
-  Tile south;
-  Tile west;
-  // if title has null east or west
-  // start moving sideways to check if goes to border
-  Color noColor = Color.WHITE;
-  Color p1Color = Color.PINK;
-  Color p2Color = Color.MAGENTA;
-  
-  // CONSTRUCTOR
-  Tile(Color color, int horizontal, int vertical, boolean filled) {
+  // neighbors
+  Cell left;
+  Cell right;
+  Cell top;
+  Cell bottom;
+
+  // construct a cell
+  Cell(Color color) {
     this.color = color;
-    
-    // Build the tiles left of this one (if it needs a neighbor
-    if (horizontal > 0) {
-      this.east = new Tile(color);
-    } else {
-      this.east = null;
-    }
-    
-    // Build the tiles below this one
-    if (vertical > 0) {
-      this.south = new Tile(color);
-    } else {
-      this.south = null;
-    }
-    
-    if (color.equals(p1Color)) {
-      this.south = new Tile(noColor, horizontal, vertical - 1);
-      this.east = new Tile(noColor,  horizontal - 1, vertical);
-    }
-    else if (color.equals(p2Color)) {
-      this.east = new Tile(noColor, horizontal, vertical);
-    }
-    else if (color.equals(noColor)) {
-      this.south = new Tile(p1Color, horizontal, vertical - 1);
-      this.east = new Tile(p2Color, horizontal - 1, vertical);
-    }
+  }
+
+  // draws the cell
+  WorldImage draw(int size) {
+    return new RectangleImage(size, size, OutlineMode.SOLID, this.color);
   }
   
-  Boolean FoundTwoEdges(Tile edge1, Tile edge2) {
-    // if it's an edge node
-    if (this.north == null || this.east == null || this.south == null || this.west == null) {
-      return null;
+  // initializes the cell's surrounding cells
+  void initSurrounding(int row, int col, ArrayList<ArrayList<Cell>> board) {
+    
+    // left
+    if (col > 0) {
+      this.left = board.get(row).get(col - 1);
+    } else {
+      this.left = null;
     }
-    return false;
+    
+    // right
+    if (col < board.size() - 1) {
+      this.right = board.get(row).get(col + 1);
+    } else {
+      this.right = null;
+    }
+    
+    // top
+    if (row > 0) {
+      this.top = board.get(row - 1).get(col);
+    } else {
+      this.top = null;
+    }
+    
+    // bottom
+    if (row < board.size() - 1) {
+      this.bottom = board.get(row + 1).get(col);
+    } else {
+      this.bottom = null;
+    }
   }
 }
 
-class BridgIt {
+// the game class
+class BridgIt extends World {
   
-  Tile rootTile = new Tile(Color.WHITE, 10, 10);
+  // world state
+  ArrayList<ArrayList<Cell>> board; // grid of cells
   
-  // CONSTRUCTOR
-  BridgIt() {
-    
+  // game details
+  int gridSize; // n * n grid
+  int cellSize = 30; // cell size
+
+  // constructor for the grid, throws certain exceptions
+  BridgIt(int gridSize) {
+    if (gridSize < 3 || gridSize % 2 == 0) {
+      throw new IllegalArgumentException("Grid size must be an odd number greater than 2.");
+    }
+    this.gridSize = gridSize;
+    this.initBoard();
   }
   
-  // draw
-  WorldImage Draw() {
-    // draw the first square / root square with position 0,0
-    // overlay next with prev position + sidelength right
-    // overlay next with prev position + sidelength down
-    // repeat
-    return null;
+  // constructor for the tests
+  BridgIt() { }
+
+  // initializes the board with cells and links neighbors
+  void initBoard() {
+    this.board = new ArrayList<>();
+
+    // create cells
+    for (int row = 1; row <= this.gridSize; row++) {
+      ArrayList<Cell> rowList = new ArrayList<>();
+      for (int col = 1; col <= this.gridSize; col++) {
+        if (col % 2 == 0 && row % 2 == 1) {
+          rowList.add(new Cell(Color.PINK)); // pink cells for odd columns and even rows
+        } else if (row % 2 == 0 && col % 2 == 1) {
+          rowList.add(new Cell(Color.MAGENTA)); // magenta cells for even columns and odd rows
+        } else {
+          rowList.add(new Cell(Color.WHITE)); // white cells for the rest
+        }
+      }
+      this.board.add(rowList);
+    }
+
+    // link neighbors using initSurrounding method
+    for (int row = 0; row < this.gridSize; row++) {
+      for (int col = 0; col < this.gridSize; col++) {
+        Cell current = this.board.get(row).get(col);
+        current.initSurrounding(row, col, this.board);
+      }
+    }
+  }
+
+  // Draws the entire game board
+  @Override
+  public WorldScene makeScene() {
+    WorldScene scene = this.getEmptyScene();
+    for (int row = 0; row < this.gridSize; row++) {
+      for (int col = 0; col < this.gridSize; col++) {
+        Cell cell = this.board.get(row).get(col);
+        int x = col * this.cellSize + this.cellSize / 2;
+        int y = row * this.cellSize + this.cellSize / 2;
+        scene.placeImageXY(cell.draw(this.cellSize), x, y);
+      }
+    }
+    return scene;
   }
 }
 
-
-//
-class ExamplesBridgIt {
+class ExamplesBridgIts {
   
+  // test the game
+  void testGame(Tester t) {
+    
+    // n * n
+    int n = 11;
+    int size = 30;
+    
+    // world size
+    int len = n * size;
+    int wid = n * size;
+    
+    BridgIt b = new BridgIt(n);
+    b.bigBang(len, wid);
+  }
+  
+  // test draw for the cell
+  void testDraw(Tester t) {
+    
+    // make an example cell
+    Cell aCell = new Cell(Color.pink);
+    
+    // give it size 30
+    int size = 30;
+    
+    // draw it
+    t.checkExpect(aCell.draw(size), 
+        new RectangleImage(30, 30, OutlineMode.SOLID, Color.pink));
+    
+    // make the size larger
+    size = 100;
+    
+    // draw again
+    t.checkExpect(aCell.draw(size), 
+        new RectangleImage(100, 100, OutlineMode.SOLID, Color.pink));
+    
+  }
+  
+  void testInitSurrounding(Tester t) {
+    
+    // create a small board
+    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
+        new Cell(Color.pink), new Cell(Color.white)));
+    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.magenta), 
+        new Cell(Color.white), new Cell(Color.magenta)));
+    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
+        new Cell(Color.pink), new Cell(Color.white)));
+    ArrayList<ArrayList<Cell>> board = new ArrayList<ArrayList<Cell>>(Arrays.asList(row1, 
+        row2, row3));
+    
+    // use initSurrounding on all of the cells
+    for (int row = 0; row < board.size(); row++) {
+      for (int col = 0; col < board.size(); col++) {
+        board.get(row).get(col).initSurrounding(row, col, board);
+      }
+    }
+    
+    // check the links (36 tests)
+    for (int row = 0; row < board.size(); row++) {
+      for (int col = 0; col < board.size(); col++) {
+        
+        // check top border
+        if (row > 0) {
+          t.checkExpect(board.get(row).get(col).top, board.get(row - 1).get(col));
+        } else {
+          t.checkExpect(board.get(row).get(col).top, null);
+        }
+        
+        // check bottom border
+        if (row < board.size() - 1) {
+          t.checkExpect(board.get(row).get(col).bottom, board.get(row + 1).get(col));
+        } else {
+          t.checkExpect(board.get(row).get(col).bottom, null);
+        }
+        
+        // check left border
+        if (col > 0) {
+          t.checkExpect(board.get(row).get(col).left, board.get(row).get(col - 1));
+        } else {
+          t.checkExpect(board.get(row).get(col).left, null);
+        }
+        
+        // check right border
+        if (col < board.size() - 1) {
+          t.checkExpect(board.get(row).get(col).right, board.get(row).get(col + 1));
+        } else {
+          t.checkExpect(board.get(row).get(col).right, null);
+        }
+        
+      }
+    }
+  }
+  
+  // test BridgIt constructor
+  void testBridgIt(Tester t) {
+    
+    String constructorException = "Grid size must be an odd number greater than or equal to 3.";
+    
+    // under 3 test
+    t.checkConstructorException(new IllegalArgumentException(constructorException), 
+        "BridgIt", 1);
+    
+    // even test
+    t.checkConstructorException(new IllegalArgumentException(constructorException), 
+        "BridgIt", 10);
+  }
+  
+  // tests initializing the board
+  void testInitBoard(Tester t) {
+    
+    // create a bridgIt without using init instantly
+    BridgIt b = new BridgIt();
+    
+    // use fields of fields to initialize gridSize
+    b.gridSize = 3;
+    
+    // right now BridgIt's board should be null, since it isn't initialized
+    t.checkExpect(b.board, null);
+    
+    // initialize the board using initboard
+    b.initBoard();
+    
+    // make an expected copy of the board
+    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
+        new Cell(Color.pink), new Cell(Color.white)));
+    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.magenta), 
+        new Cell(Color.white), new Cell(Color.magenta)));
+    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
+        new Cell(Color.pink), new Cell(Color.white)));
+    ArrayList<ArrayList<Cell>> board = new ArrayList<ArrayList<Cell>>(Arrays.asList(row1, 
+        row2, row3));
+    
+    // link the cells
+    for (int row = 0; row < board.size(); row++) {
+      for (int col = 0; col < board.size(); col++) {
+        board.get(row).get(col).initSurrounding(row, col, board);
+      }
+    }
+    
+    // check if the expect copy matches the one we just initialized
+    t.checkExpect(b.board, board);
+  }
+  
+  // tests the MakeScene method
+  void testMakeScene(Tester t) {
+    
+    // create a bridgIt of size 3
+    BridgIt b = new BridgIt(3);
+    
+    // create the expected scene
+    WorldScene scene = b.getEmptyScene();
+    for (int row = 0; row < b.board.size(); row++) {
+      for (int col = 0; col < b.board.size(); col++) {
+        Cell cell = b.board.get(row).get(col);
+        int x = col * b.cellSize + b.cellSize / 2;
+        int y = row * b.cellSize + b.cellSize / 2;
+        scene.placeImageXY(cell.draw(b.cellSize), x, y);
+      }
+    }
+    
+    // test if the scene matches the expected scene
+    t.checkExpect(b.makeScene(), scene);
+  }
 }
