@@ -254,7 +254,7 @@ class BridgIt extends World {
     WorldScene last = this.makeScene();
     Color msgColor = Color.black;
     last.placeImageXY(
-        new TextImage(message, 30, msgColor), 
+        new TextImage(message, this.gridSize * this.cellSize / 12, msgColor), 
         (this.gridSize * this.cellSize) / 2,
         (this.gridSize * this.cellSize) / 2);
     return last;
@@ -268,7 +268,7 @@ class ExamplesBridgIts {
   void testGame(Tester t) {
     
     // n * n
-    int n = 11;
+    int n = 3;
     int size = 30;
     
     // world size
