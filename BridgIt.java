@@ -9,6 +9,7 @@ class Cell {
   // type (p1, p2, or unowned)
   // p1 is pink, p2 is magenta
   Color color;
+  boolean border;
   
   // neighbors
   Cell left;
@@ -17,8 +18,9 @@ class Cell {
   Cell bottom;
   
   // construct a cell
-  Cell(Color color) {
+  Cell(Color color, boolean border) {
     this.color = color;
+    this.border = border;
   }
 
   // draws the cell
@@ -44,7 +46,7 @@ class Cell {
   // player 1 win condition
   // 0 = move right, 1 = move top, 2 = move bottom
   // accumulator that counts the amount of right movements, needs to hit gridSize - 2
-  boolean winPink(int rightCount, int lastMove) {
+  boolean winPink(int rightCount, ArrayList<Cell> nodesVisited) {
     if (!this.color.equals(Color.pink)) {
       return false;
     }
@@ -53,52 +55,61 @@ class Cell {
       return true; // win
     } 
     
-    boolean right = (this.right.winPink(rightCount - 1, 0));
-    boolean top = false;
-    boolean bottom = false;
+    for (int i = 0; i < nodesVisited.size(); i++) {
+      if (this == nodesVisited.get(i)) {
+        return false;
+      }
+    }
     
-    if (lastMove == 1) {
-      top = this.top.winPink(rightCount, 1);
+    if (this.border) { // always returning false atm
+      return false;
     }
-    else if (lastMove == 2) {
-      bottom = this.bottom.winPink(rightCount, 2);
-    }
-    else {
-      top = this.top.winPink(rightCount, 1);
-      bottom = this.bottom.winPink(rightCount, 2);
-    }
+    
+    // adds the most recently visited node
+    nodesVisited.add(this);
+    
+    boolean bottom = (this.bottom.winPink(rightCount, nodesVisited));
+    boolean left = (this.left.winPink(rightCount + 1, nodesVisited));
+    boolean right = (this.right.winPink(rightCount - 1, nodesVisited));
+    boolean top = (this.top.winPink(rightCount, nodesVisited));
      
-    return right || top || bottom;
+    return bottom || left || right || top;
   }
   
   // player 2 win condition
   // 0 = move bottom, 1 = move left, 2 = move right
   // accumulator that counts the amount of right movements, needs to hit gridSize - 2
-  boolean winMagenta(int downCount, int lastMove) {
+  boolean winMagenta(int downCount, ArrayList<Cell> nodesVisited) {
     if (!this.color.equals(Color.magenta)) {
       return false;
     }
     
+    // win con
     if (downCount == 0) {
       return true; // win
-    } 
+    }
     
-    boolean bottom = (this.bottom.winMagenta(downCount - 1, 0));
-    boolean left = false;
-    boolean right = false;
+    // checks if the cell is a cell we have visited before
+    for (int i = 0; i < nodesVisited.size(); i++) {
+      if (this == nodesVisited.get(i)) {
+        return false;
+      }
+    }
     
-    if (lastMove == 1) {
-      left = this.left.winMagenta(downCount, 1);
+    // checks if the cell is a border cell
+    if (this.border) {
+      return false;
     }
-    else if (lastMove == 2) {
-      right = this.right.winMagenta(downCount, 2);
-    }
-    else {
-      left = this.left.winMagenta(downCount, 1);
-      right = this.right.winMagenta(downCount, 2);
-    }
-     
-    return bottom || left || right;
+    
+    // adds the most recently visited node
+    nodesVisited.add(this);
+    
+    boolean bottom = (this.bottom.winMagenta(downCount - 1, nodesVisited));
+    boolean left = (this.left.winMagenta(downCount, nodesVisited));
+    boolean right = (this.right.winMagenta(downCount, nodesVisited));
+    boolean top = (this.top.winMagenta(downCount + 1, nodesVisited));
+    
+    return bottom || left || right || top;
   }
   
   // initializes the cell's surrounding cells
@@ -164,17 +175,21 @@ class BridgIt extends World {
   // EFFECT: -----------------------------------------------------------------------------------------------------
   void initBoard() {
     this.board = new ArrayList<>();
-
+    boolean isBorder;
     // create cells
     for (int row = 1; row <= this.gridSize; row++) {
       ArrayList<Cell> rowList = new ArrayList<>();
       for (int col = 1; col <= this.gridSize; col++) {
+        isBorder = false;
+        if (row == 1 || col == 1) {
+          isBorder = true;
+        }
         if (col % 2 == 0 && row % 2 == 1) {
-          rowList.add(new Cell(Color.magenta)); // pink cells for odd columns and even rows
+          rowList.add(new Cell(Color.magenta, isBorder)); // pink cells for odd columns and even rows
         } else if (row % 2 == 0 && col % 2 == 1) {
-          rowList.add(new Cell(Color.pink)); // magenta cells for even columns and odd rows
+          rowList.add(new Cell(Color.pink, isBorder)); // magenta cells for even columns and odd rows
         } else {
-          rowList.add(new Cell(Color.WHITE)); // white cells for the rest
+          rowList.add(new Cell(Color.WHITE, isBorder)); // white cells for the rest
         }
       }
       this.board.add(rowList);
@@ -187,6 +202,7 @@ class BridgIt extends World {
         current.initSurrounding(row, col, this.board);
       }
     }
+    
   }
 
   // Draws the entire game board
@@ -232,7 +248,7 @@ class BridgIt extends World {
     // pink
     for (int row = 1; row < this.gridSize; row += 2) {
       c = this.board.get(row).get(1);
-      if (c.winPink(this.gridSize - 2, 0)) {
+      if (c.winPink(this.gridSize - 2, new ArrayList<Cell>())) {
         return 1;
       }
     }
@@ -240,7 +256,7 @@ class BridgIt extends World {
     // magenta
     for (int col = 1; col < this.gridSize; col += 2) {
       c = this.board.get(1).get(col);
-      if (c.winMagenta(this.gridSize - 2, 0)) {
+      if (c.winMagenta(this.gridSize - 2, new ArrayList<Cell>())) {
         return 2;
       }
     }
@@ -268,7 +284,7 @@ class ExamplesBridgIts {
   void testGame(Tester t) {
     
     // n * n
-    int n = 3;
+    int n = 11;
     int size = 30;
     
     // world size
@@ -283,7 +299,7 @@ class ExamplesBridgIts {
   void testDraw(Tester t) {
     
     // make an example cell
-    Cell aCell = new Cell(Color.pink);
+    Cell aCell = new Cell(Color.pink, false);
     
     // give it size 30
     int size = 30;
@@ -304,12 +320,12 @@ class ExamplesBridgIts {
   void testInitSurrounding(Tester t) {
     
     // create a small board
-    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
-        new Cell(Color.magenta), new Cell(Color.white)));
-    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.pink), 
-        new Cell(Color.white), new Cell(Color.pink)));
-    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
-        new Cell(Color.magenta), new Cell(Color.white)));
+    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white, true), 
+        new Cell(Color.magenta, true), new Cell(Color.white, true)));
+    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.pink, true), 
+        new Cell(Color.white, false), new Cell(Color.pink, false)));
+    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white, true), 
+        new Cell(Color.magenta, false), new Cell(Color.white, false)));
     ArrayList<ArrayList<Cell>> board = new ArrayList<ArrayList<Cell>>(Arrays.asList(row1, 
         row2, row3));
     
@@ -386,12 +402,12 @@ class ExamplesBridgIts {
     b.initBoard();
     
     // make an expected copy of the board
-    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
-        new Cell(Color.magenta), new Cell(Color.white)));
-    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.pink), 
-        new Cell(Color.white), new Cell(Color.pink)));
-    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white), 
-        new Cell(Color.magenta), new Cell(Color.white)));
+    ArrayList<Cell> row1 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white, true), 
+        new Cell(Color.magenta, true), new Cell(Color.white, true)));
+    ArrayList<Cell> row2 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.pink, true), 
+        new Cell(Color.white, false), new Cell(Color.pink, false)));
+    ArrayList<Cell> row3 = new ArrayList<Cell>(Arrays.asList(new Cell(Color.white, true), 
+        new Cell(Color.magenta, false), new Cell(Color.white, false)));
     ArrayList<ArrayList<Cell>> board = new ArrayList<ArrayList<Cell>>(Arrays.asList(row1, 
         row2, row3));
     
