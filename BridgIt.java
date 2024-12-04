@@ -4,6 +4,7 @@ import tester.*;
 import javalib.worldimages.*;
 import java.awt.Color;
 
+// represents a cell
 class Cell {
   
   // type (p1, p2, or unowned)
