@@ -102,7 +102,7 @@ class Cell {
   }
   
   // initializes the cell's surrounding cells
-  // EFFECT: -----------------------------------------------------------------------------------------------------
+  // EFFECT: Changes the top, right, down, left to node's neighbors
   void initSurrounding(int row, int col, ArrayList<ArrayList<Cell>> board) {
     
     // left
@@ -161,7 +161,7 @@ class BridgIt extends World {
   BridgIt() { }
 
   // initializes the board with cells and links neighbors
-  // EFFECT: -----------------------------------------------------------------------------------------------------
+  // EFFECT: Adds cells to board array of array to create board
   void initBoard() {
     this.board = new ArrayList<>();
 
@@ -205,7 +205,7 @@ class BridgIt extends World {
   }
   
   // handles mouse click
-  // EFFECT: -----------------------------------------------------------------------------------------------------
+  // EFFECT: Ends world if win, sets player's turn to area clicked if it was valid
   public void onMouseClicked(Posn pos) {
     
     // calculate which square was clicked
@@ -262,13 +262,14 @@ class BridgIt extends World {
   
 }
 
+// class for testing all functionality of BridgIt
 class ExamplesBridgIts {
   
   // test the game
   void testGame(Tester t) {
     
     // n * n
-    int n = 3;
+    int n = 11;
     int size = 30;
     
     // world size
@@ -301,6 +302,7 @@ class ExamplesBridgIts {
     
   }
   
+  // test initializing surroundings of nodes
   void testInitSurrounding(Tester t) {
     
     // create a small board
@@ -427,33 +429,137 @@ class ExamplesBridgIts {
     t.checkExpect(b.makeScene(), scene);
   }
   
-  // 
+  // test the click in cell
   void testClick(Tester t) {
-    
-  }
+     Cell cell = new Cell(Color.white);
   
-  // 
+     // test clicking an unplaced cell (player 1)
+     boolean p1turn = true; // Player 1's turn
+     t.checkExpect(cell.click(p1turn), false); // Should return the opposite turn
+     t.checkExpect(cell.color, Color.pink); // Cell should now be pink
+  
+     //test clicking an already unplaced cell (player 1)
+     cell = new Cell(Color.white);
+     p1turn = false;
+     t.checkExpect(cell.click(p1turn), true);
+     t.checkExpect(cell.color, Color.magenta);
+  
+     // test clicking an already placed cell (player 1)
+     cell = new Cell(Color.pink);
+     p1turn = true;
+     t.checkExpect(cell.click(p1turn), true);
+     t.checkExpect(cell.color, Color.pink);
+  
+     // test clicking an already placed cell (player 2)
+     cell = new Cell(Color.magenta);
+     p1turn = false;
+     t.checkExpect(cell.click(p1turn), false);
+     t.checkExpect(cell.color, Color.magenta);
+  
+     // test where the color is invalid idk (not white, pink, or magenta)
+     cell = new Cell(Color.red); // Invalid color
+     p1turn = true;
+     t.checkExpect(cell.click(p1turn), true);
+     t.checkExpect(cell.color, Color.red);
+  }
+
+  // test the pink's epic win
   void testWinPink(Tester t) {
-    
-  }
+     BridgIt b = new BridgIt(5); // 5x5 grid
   
-  // 
+     // initially no pink win
+     t.checkExpect(b.board.get(1).get(0).winPink(b.gridSize - 2, 0), false);
+  
+     // player 1 (pink) win
+     b.board.get(1).get(1).color = Color.pink;
+     b.board.get(1).get(3).color = Color.pink;
+  
+     // win pink
+     t.checkExpect(b.board.get(1).get(0).winPink(b.gridSize - 2, 0), true);
+  
+     // gets blocked
+     b.initBoard();
+     b.board.get(1).get(1).color = Color.pink;
+     b.board.get(1).get(3).color = Color.magenta; // Interrupt the path
+  
+     // so no win
+     t.checkExpect(b.board.get(1).get(0).winPink(b.gridSize - 2, 0), false);
+  }
+
+  
+  // test the magenta's epic win
   void testWinMagenta(Tester t) {
-    
-  }
+     BridgIt b = new BridgIt(5); // 5x5 grid
   
-  // 
+     // initially no magenta win
+     t.checkExpect(b.board.get(0).get(1).winMagenta(b.gridSize - 2, 0), false);
+  
+     // player 1 (magenta) win
+     b.board.get(1).get(1).color = Color.magenta;
+     b.board.get(3).get(1).color = Color.magenta;
+  
+     // win magenta
+     t.checkExpect(b.board.get(0).get(1).winMagenta(b.gridSize - 2, 0), true);
+  
+     // gets blocked
+     b.initBoard();
+     b.board.get(1).get(1).color = Color.magenta;
+     b.board.get(3).get(1).color = Color.pink; // Interrupt the path
+  
+     // so no win
+     t.checkExpect(b.board.get(0).get(1).winMagenta(b.gridSize - 2, 0), false);
+  }
+
+  // test when player inputs mouse click
   void testOnMouseClick(Tester t) {
     
   }
   
-  // 
+  // test the epic win
   void testWin(Tester t) {
-    
+     BridgIt b = new BridgIt(5); // 5x5 grid
+  
+     // no winner
+     t.checkExpect(b.win(), 0);
+  
+     // player 1 (pink)
+     b.board.get(1).get(1).color = Color.pink;
+     b.board.get(1).get(3).color = Color.pink;
+  
+     // player 1 now win
+     t.checkExpect(b.win(), 1);
+  
+     // reset board
+     b.initBoard();
+  
+     // player 2 (magenta)
+     b.board.get(1).get(1).color = Color.magenta;
+     b.board.get(3).get(1).color = Color.magenta;
+  
+     // player 2 now win
+     t.checkExpect(b.win(), 2);
+  
+     // now no one win
+     b.initBoard();
+     t.checkExpect(b.win(), 0);
   }
   
-  // 
+  // tests the last scene
   void testLastScene(Tester t) {
-    
+     BridgIt b = new BridgIt(3);
+  
+     String message = "Player one has won!";
+     Color msgColor = Color.black;
+  
+     WorldScene expectedScene = b.getEmptyScene();
+     expectedScene.placeImageXY(
+         new TextImage(message, b.gridSize * b.cellSize / 12, msgColor),
+         (b.gridSize * b.cellSize) / 2,
+         (b.gridSize * b.cellSize) / 2
+     );
+  
+     WorldScene actualScene = b.lastScene(message);
+  
+     t.checkExpect(actualScene, expectedScene);
   }
 }
